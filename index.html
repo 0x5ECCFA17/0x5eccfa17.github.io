@@ -1,1 +1,647 @@
-Harden against...
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050608">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>me is..</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050608;
+      --cyan: #00f7ff;
+      --green: #5cff9d;
+      --pink: #ff3bd4;
+      --violet: #9f7bff;
+      --red: #ff315a;
+      --amber: #ffd166;
+      --muted: #708188;
+      --mono: Courier, "Courier New", "Nimbus Mono PS", "Liberation Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: var(--mono) !important;
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "calt" 0;
+      font-synthesis: none;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100svh;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: clamp(2.8rem, 8vh, 5rem) clamp(0.35rem, 2.5vw, 2rem) clamp(7rem, 17vh, 10.5rem);
+      color: #edfaff;
+      background:
+        radial-gradient(circle at 50% 44%, rgba(0, 247, 255, 0.05), transparent 35rem),
+        linear-gradient(180deg, #080a0d 0%, var(--bg) 78%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      pointer-events: none;
+      opacity: 0.16;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 3px,
+        rgba(255, 255, 255, 0.026) 4px
+      );
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 29;
+      pointer-events: none;
+      box-shadow: inset 0 0 14vw rgba(0, 0, 0, 0.92);
+    }
+
+    .back {
+      position: fixed;
+      z-index: 50;
+      top: max(18px, env(safe-area-inset-top));
+      left: max(20px, env(safe-area-inset-left));
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 1.15rem;
+      transition: color 220ms ease, text-shadow 220ms ease;
+    }
+
+    .back:hover,
+    .back:focus-visible {
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan);
+      outline: none;
+    }
+
+    main {
+      position: relative;
+      z-index: 10;
+      width: min(98vw, 1450px);
+    }
+
+    .states,
+    .blocks {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: clamp(0px, 0.22vw, 0.22rem);
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .states {
+      align-items: end;
+      margin-bottom: clamp(1.15rem, 3.4vh, 2.2rem);
+    }
+
+    .state {
+      min-width: 0;
+      color: #82949c;
+      opacity: 0.76;
+      text-align: center;
+      transform: translateY(0);
+      transition: color 700ms ease, opacity 700ms ease, transform 700ms ease, text-shadow 700ms ease;
+    }
+
+    .face {
+      display: block;
+      min-height: 1.5em;
+      overflow: visible;
+      white-space: nowrap;
+      font-size: clamp(0.42rem, 1.05vw, 0.96rem);
+      line-height: 1.25;
+      letter-spacing: -0.12em;
+      text-shadow: 0 0 4px currentColor;
+    }
+
+    .state.passed {
+      color: #b0c0c6;
+      opacity: 0.9;
+    }
+
+    .state.active {
+      color: var(--active-colour, var(--green));
+      opacity: 1;
+      transform: translateY(-0.26rem) scale(1.08);
+      text-shadow: 0 0 8px currentColor, 0 0 18px currentColor;
+    }
+
+    .active-display {
+      display: grid;
+      place-items: center;
+      min-height: clamp(7.5rem, 24vh, 14rem);
+      margin: clamp(0.3rem, 1.2vh, 0.8rem) 0 clamp(0.8rem, 2.8vh, 1.8rem);
+      color: var(--active-colour, var(--green));
+      text-align: center;
+      pointer-events: none;
+      transition: color 900ms ease, filter 900ms ease, transform 900ms ease;
+    }
+
+    .active-face {
+      display: block;
+      white-space: nowrap;
+      font-size: clamp(2.6rem, 10vw, 8.4rem);
+      line-height: 1;
+      letter-spacing: -0.12em;
+      text-shadow:
+        0 0 8px currentColor,
+        0 0 22px currentColor,
+        0 0 46px color-mix(in srgb, currentColor 55%, transparent);
+      animation: face-breathe 4.8s ease-in-out infinite;
+      transition: opacity 520ms ease, transform 520ms ease, color 900ms ease;
+    }
+
+    .active-face.changing {
+      opacity: 0.08;
+      transform: scale(0.92);
+    }
+
+    @keyframes face-breathe {
+      0%, 100% { transform: translateY(0) scale(1); filter: brightness(0.86); }
+      50% { transform: translateY(-0.08em) scale(1.035); filter: brightness(1.18); }
+    }
+
+    .bar-shell {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.55rem;
+      width: 100%;
+      color: #8ea0a7;
+      font-size: clamp(0.66rem, 1.45vw, 0.98rem);
+      white-space: nowrap;
+    }
+
+    .bracket {
+      opacity: 0.82;
+      text-shadow: 0 0 5px currentColor;
+    }
+
+    .block {
+      display: block;
+      min-width: 0;
+      color: var(--segment-colour, #405057);
+      opacity: 0.32;
+      font-size: clamp(0.58rem, 1.35vw, 0.98rem);
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 0 3px currentColor;
+      transition: color 1300ms ease, opacity 1100ms ease, text-shadow 1300ms ease, transform 900ms ease, filter 900ms ease;
+    }
+
+    .block.on {
+      opacity: var(--segment-opacity, 0.8);
+      text-shadow: 0 0 var(--segment-glow, 5px) currentColor;
+    }
+
+    .block.active {
+      opacity: 1;
+      filter: brightness(1.38);
+      transform: translateY(-0.08em);
+      text-shadow: 0 0 7px currentColor, 0 0 17px currentColor;
+      animation: segment-pulse var(--pulse-speed, 2500ms) steps(2, end) infinite;
+    }
+
+    @keyframes segment-pulse {
+      0%, 68%, 100% { opacity: 0.62; }
+      69%, 82% { opacity: 1; }
+      83%, 92% { opacity: 0.34; }
+    }
+
+    .message-strip {
+      position: fixed;
+      z-index: 45;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw;
+      min-height: clamp(6rem, 14vh, 8.8rem);
+      margin: 0;
+      padding:
+        clamp(1rem, 2.7vw, 1.6rem)
+        max(clamp(1rem, 5vw, 5rem), env(safe-area-inset-right))
+        max(clamp(1rem, 2.8vw, 1.5rem), env(safe-area-inset-bottom))
+        max(clamp(1rem, 5vw, 5rem), env(safe-area-inset-left));
+      display: flex;
+      align-items: center;
+      border-top: 1px solid var(--message-colour, rgba(92, 255, 157, 0.26));
+      background: rgba(2, 5, 7, 0.94);
+      box-shadow: 0 -16px 46px rgba(0, 0, 0, 0.58);
+      color: #b5c6cc;
+      font-size: clamp(0.7rem, 1.45vw, 1rem);
+      line-height: 1.58;
+      text-align: left;
+      text-shadow: 0 0 8px rgba(181, 198, 204, 0.08);
+      transition: opacity 600ms ease, color 850ms ease, border-color 850ms ease, text-shadow 850ms ease;
+    }
+
+    .message-strip::before {
+      content: ">";
+      flex: 0 0 auto;
+      margin-right: 0.85em;
+      color: var(--message-colour, var(--green));
+      text-shadow: 0 0 8px currentColor;
+    }
+
+    .message-strip.changing {
+      opacity: 0.08;
+    }
+
+    .message-strip.technical {
+      color: #d5e3e7;
+      text-shadow: 0 0 10px color-mix(in srgb, var(--message-colour, var(--cyan)) 28%, transparent);
+    }
+
+    .explosion-field {
+      position: fixed;
+      inset: 0;
+      z-index: 44;
+      display: none;
+      place-items: center;
+      overflow: hidden;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.12), transparent 8rem),
+        radial-gradient(circle at 50% 46%, rgba(255, 49, 90, 0.11), transparent 30rem);
+    }
+
+    .blast-stage {
+      position: relative;
+      width: min(94vw, 74rem);
+      height: min(68vh, 42rem);
+      display: grid;
+      place-items: center;
+      color: var(--red);
+      filter: drop-shadow(0 0 12px currentColor) drop-shadow(0 0 34px rgba(255, 49, 90, 0.42));
+    }
+
+    .blast-core,
+    .blast-wave {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      margin: 0;
+      transform: translate(-50%, -50%);
+      white-space: pre;
+      text-align: center;
+      font-weight: 400;
+      line-height: 1.02;
+    }
+
+    .blast-core {
+      z-index: 3;
+      color: #fff;
+      font-size: clamp(0.72rem, 2vw, 1.55rem);
+      text-shadow: 0 0 9px #fff, 0 0 24px var(--red);
+      animation: core-detonate 2.9s steps(2, end) both;
+    }
+
+    .blast-wave {
+      z-index: 2;
+      color: var(--wave-colour, var(--amber));
+      font-size: clamp(0.48rem, 1.15vw, 0.92rem);
+      opacity: 0;
+      animation: wave-expand 2.8s ease-out both;
+      animation-delay: var(--wave-delay, 0ms);
+    }
+
+    .blast-particle {
+      position: absolute;
+      z-index: 4;
+      left: 50%;
+      top: 46%;
+      color: var(--particle-colour, var(--amber));
+      font-size: var(--particle-size, 1rem);
+      text-shadow: 0 0 8px currentColor;
+      opacity: 0;
+      animation: particle-flight 2.45s cubic-bezier(.12,.62,.18,1) var(--particle-delay, 0ms) both;
+    }
+
+    body.detonating .explosion-field {
+      display: grid;
+      animation: field-flash 2.9s steps(2, end) both;
+    }
+
+    body.detonating main {
+      opacity: 0.18;
+      filter: grayscale(1) contrast(1.45);
+    }
+
+    body.detonating .message-strip {
+      opacity: 0.34;
+    }
+
+    @keyframes core-detonate {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.25); }
+      10% { opacity: 1; transform: translate(-50%, -50%) scale(0.8); }
+      18% { transform: translate(-50%, -50%) scale(1.35); color: #fff; }
+      30% { transform: translate(-50%, -50%) scale(0.92); color: var(--amber); }
+      48% { transform: translate(-50%, -50%) scale(1.12); color: var(--red); }
+      70% { opacity: 0.82; transform: translate(-50%, -50%) scale(1.02); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+    }
+
+    @keyframes wave-expand {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.18); }
+      12% { opacity: 0.9; }
+      64% { opacity: 0.55; }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(2.65); }
+    }
+
+    @keyframes particle-flight {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
+      12% { opacity: 1; }
+      74% { opacity: 0.72; }
+      100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--particle-x)), calc(-50% + var(--particle-y))) rotate(var(--particle-rot)) scale(0.2);
+      }
+    }
+
+    @keyframes field-flash {
+      0%, 100% { background-color: transparent; }
+      8% { background-color: rgba(255, 255, 255, 0.15); }
+      15% { background-color: rgba(255, 49, 90, 0.10); }
+      24% { background-color: transparent; }
+      43% { background-color: rgba(255, 209, 102, 0.07); }
+      52% { background-color: transparent; }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding-left: 0.2rem;
+        padding-right: 0.2rem;
+        padding-bottom: 8.3rem;
+      }
+
+      main {
+        width: 99vw;
+      }
+
+      .states,
+      .blocks {
+        gap: 0;
+      }
+
+      .face {
+        font-size: clamp(0.36rem, 1.56vw, 0.58rem);
+        letter-spacing: -0.2em;
+      }
+
+      .active-display {
+        min-height: clamp(6rem, 21vh, 9rem);
+      }
+
+      .active-face {
+        font-size: clamp(2.25rem, 13vw, 4.7rem);
+      }
+
+      .bar-shell {
+        gap: 0.24rem;
+      }
+
+      .block {
+        font-size: clamp(0.5rem, 2.1vw, 0.72rem);
+      }
+
+      .message-strip {
+        min-height: 7.4rem;
+        font-size: clamp(0.64rem, 2.6vw, 0.82rem);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="back" href="index.html" aria-label="Return to landing page">&lt;</a>
+
+  <main>
+    <ol class="states" id="states" aria-label="State sequence">
+      <li class="state active"><span class="face">(-_-) zZ</span></li>
+      <li class="state"><span class="face">(o_o)</span></li>
+      <li class="state"><span class="face">(-_-)</span></li>
+      <li class="state"><span class="face">(^_^)</span></li>
+      <li class="state"><span class="face">(^_~)</span></li>
+      <li class="state"><span class="face">(._.)</span></li>
+      <li class="state"><span class="face">(u_u)</span></li>
+      <li class="state"><span class="face">(T_T)</span></li>
+      <li class="state"><span class="face">(&gt;_&lt;)</span></li>
+      <li class="state"><span class="face">(@_@)</span></li>
+      <li class="state"><span class="face">(x_x)</span></li>
+      <li class="state"><span class="face">(-_-) zZ</span></li>
+    </ol>
+
+    <div class="active-display" id="activeDisplay" aria-live="polite" aria-atomic="true">
+      <span class="active-face" id="activeFace">(-_-) zZ</span>
+    </div>
+
+    <div class="bar-shell" role="progressbar" aria-label="State cycle" aria-valuemin="1" aria-valuemax="12" aria-valuenow="1">
+      <span class="bracket">[</span>
+      <span class="blocks" id="blocks" aria-hidden="true"></span>
+      <span class="bracket">]</span>
+    </div>
+  </main>
+
+  <p class="message-strip" id="messageStrip"><span id="message" aria-live="polite"></span></p>
+
+  <div class="explosion-field" id="explosion" aria-hidden="true">
+    <div class="blast-stage" id="blastStage">
+      <pre class="blast-wave" style="--wave-delay:0ms;--wave-colour:#fff;">                 .
+           .     |     .
+      .       \  |  /       .
+    - - - - -  [#]  - - - - -
+      .       /  |  \       .
+           .     |     .
+                 .</pre>
+      <pre class="blast-wave" style="--wave-delay:260ms;--wave-colour:#ffd166;">        .  *  .  *  .
+     *                 *
+   .     --==[###]==--     .
+     *                 *
+        .  *  .  *  .</pre>
+      <pre class="blast-wave" style="--wave-delay:520ms;--wave-colour:#ff315a;">  .       .       .       .
+      *       +       *
+.   - - -  ((#####))  - - -   .
+      *       +       *
+  .       .       .       .</pre>
+      <pre class="blast-core">      \   |   /
+    --- [x_x] ---
+      /   |   \</pre>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const states = [...document.querySelectorAll('.state')];
+      const blocksHost = document.getElementById('blocks');
+      const message = document.getElementById('message');
+      const messageStrip = document.getElementById('messageStrip');
+      const progress = document.querySelector('[role="progressbar"]');
+      const activeFace = document.getElementById('activeFace');
+      const activeDisplay = document.getElementById('activeDisplay');
+      const explosion = document.getElementById('explosion');
+      const blastStage = document.getElementById('blastStage');
+      const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const philosophy = [
+        'A mistake left sleeping does not disappear; it waits. Rest is useful only when it prepares us to look again.',
+        'Waking begins with admitting that something went wrong. Awareness is the first positive consequence of error.',
+        'A calm face can conceal a dangerous mistake. Pause long enough to separate fear from fact.',
+        'A smile after failure is not denial when it means: I survived, I learned, and I can repair.',
+        'Optimism should narrow when evidence warns us. Hope becomes useful only when joined to caution.',
+        'Silence after a mistake may protect pride while endangering everything else. Speak before the damage speaks for you.',
+        'Sadness proves the outcome mattered. Let it sharpen responsibility rather than erase possibility.',
+        'Tears cannot reverse an error, but they can dissolve the illusion that nothing must change.',
+        'Anger can reveal a violated boundary, but aimed blindly it becomes the next mistake.',
+        'When emotion becomes command, consequence becomes random. Stepping back is a form of hope.',
+        'Some mistakes end what cannot be restored. Honour the loss by refusing to waste its lesson.',
+        'After the lesson is kept, rest is not surrender. Tomorrow is the positive hidden inside an honest ending.'
+      ];
+
+      const electronics = [
+        'Hot chips sink ships: heat raises leakage, erodes timing margin, and accelerates ageing.',
+        'Step above the ceiling; crash onto the floor: overvoltage can trigger oxide breakdown or latch-up.',
+        'Tickle my left; shake my right: capacitive crosstalk can delay or glitch a neighbouring net.',
+        'Show me light; flip me over: focused light on exposed silicon can deposit charge and upset a stored bit.',
+        'One edge, two answers: violate setup or hold time and a flip-flop may become metastable.',
+        'A floating input invents its own truth: high impedance lets noise choose the logic level.',
+        'The shortest pulse can survive the longest test when a clock edge captures the glitch.',
+        'Dense ones are not automatically loud; transitions drive dynamic power and most electromagnetic spikes.',
+        'A reset released one cycle early can wake an uninitialised state machine.',
+        'Miss one assignment in combinational RTL and unintended storage may appear.',
+        'Undefined is contagious: X optimism can hide a bug; X pessimism can invent one.',
+        'ECC can correct a bit without correcting the fault that disturbed it.'
+      ];
+
+      const palette = [
+        '#426c69', '#4c8079', '#57978a', '#65aa91',
+        '#7bb681', '#a5bd68', '#c8bd5e', '#e7a54f',
+        '#f47b4f', '#ff5a5f', '#ff315a', '#71828a'
+      ];
+
+      const beatDuration = reducedMotion ? 180 : 6500;
+      const previewState = -1;
+      const previewTechnical = false;
+      let index = previewState >= 0 ? Math.min(previewState, states.length - 1) : 0;
+      let technicalBeat = previewState >= 0 ? previewTechnical : false;
+      let timer = 0;
+
+      const blocks = states.map((_, blockIndex) => {
+        const block = document.createElement('span');
+        block.className = 'block';
+        block.textContent = '#';
+        block.style.setProperty('--segment-colour', palette[blockIndex]);
+        block.style.setProperty('--segment-opacity', String(0.45 + blockIndex * 0.045));
+        block.style.setProperty('--segment-glow', `${3 + blockIndex * 0.7}px`);
+        block.style.setProperty('--pulse-speed', `${2800 - blockIndex * 115}ms`);
+        blocksHost.appendChild(block);
+        return block;
+      });
+
+      const updateSequence = () => {
+        states.forEach((state, stateIndex) => {
+          state.classList.toggle('active', stateIndex === index);
+          state.classList.toggle('passed', stateIndex < index);
+          state.style.setProperty('--active-colour', palette[index]);
+          state.setAttribute('aria-current', stateIndex === index ? 'step' : 'false');
+        });
+
+        blocks.forEach((block, blockIndex) => {
+          block.classList.toggle('on', blockIndex <= index);
+          block.classList.toggle('active', blockIndex === index);
+        });
+
+        progress.setAttribute('aria-valuenow', String(index + 1));
+        messageStrip.style.setProperty('--message-colour', palette[index]);
+        activeDisplay.style.setProperty('--active-colour', palette[index]);
+        activeFace.classList.add('changing');
+        window.setTimeout(() => {
+          activeFace.textContent = states[index].querySelector('.face').textContent;
+          activeFace.classList.remove('changing');
+        }, reducedMotion ? 0 : 260);
+      };
+
+      const swapMessage = (text, technical) => {
+        messageStrip.classList.add('changing');
+        window.setTimeout(() => {
+          message.textContent = text;
+          messageStrip.classList.toggle('technical', technical);
+          messageStrip.classList.remove('changing');
+        }, reducedMotion ? 0 : 520);
+      };
+
+      const particleSymbols = ['*', '+', 'x', '.', '/', '\\', '|', '-'];
+      const particleColours = ['#ffffff', '#ffd166', '#ff315a', '#ff3bd4', '#00f7ff'];
+
+      const clearParticles = () => {
+        blastStage.querySelectorAll('.blast-particle').forEach((node) => node.remove());
+      };
+
+      const buildParticles = () => {
+        clearParticles();
+        const count = reducedMotion ? 0 : 28;
+        for (let i = 0; i < count; i += 1) {
+          const particle = document.createElement('span');
+          const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.22;
+          const distance = 110 + Math.random() * 310;
+          particle.className = 'blast-particle';
+          particle.textContent = particleSymbols[Math.floor(Math.random() * particleSymbols.length)];
+          particle.style.setProperty('--particle-x', `${Math.cos(angle) * distance}px`);
+          particle.style.setProperty('--particle-y', `${Math.sin(angle) * distance * 0.68}px`);
+          particle.style.setProperty('--particle-rot', `${Math.round((Math.random() - 0.5) * 520)}deg`);
+          particle.style.setProperty('--particle-delay', `${Math.round(Math.random() * 320)}ms`);
+          particle.style.setProperty('--particle-size', `${(0.72 + Math.random() * 0.9).toFixed(2)}rem`);
+          particle.style.setProperty('--particle-colour', particleColours[Math.floor(Math.random() * particleColours.length)]);
+          blastStage.appendChild(particle);
+        }
+      };
+
+      const triggerExplosion = (enabled) => {
+        document.body.classList.toggle('detonating', enabled);
+        explosion.setAttribute('aria-hidden', enabled ? 'false' : 'true');
+        if (enabled) buildParticles();
+        else clearParticles();
+      };
+
+      const renderBeat = () => {
+        updateSequence();
+        const isDead = index === 10;
+        swapMessage(technicalBeat ? electronics[index] : philosophy[index], technicalBeat);
+        triggerExplosion(isDead && technicalBeat);
+      };
+
+      const advance = () => {
+        technicalBeat = !technicalBeat;
+        if (!technicalBeat) index = (index + 1) % states.length;
+        renderBeat();
+        window.clearTimeout(timer);
+        timer = window.setTimeout(advance, beatDuration);
+      };
+
+      renderBeat();
+      timer = window.setTimeout(advance, beatDuration);
+    })();
+  </script>
+</body>
+</html>
